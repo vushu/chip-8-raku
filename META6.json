@@ -1,0 +1,18 @@
+{
+    "auth": "zef:vushu",
+    "build-depends": [
+    ],
+    "depends": [
+        "Raylib::Bindings:ver<0.0.5>:auth<zef:vushu>"
+    ],
+    "description": "A brand new and very nice module",
+    "name": "chip-8",
+    "provides": {
+        "Chip8": "lib/Chip8.rakumod"
+    },
+    "resources": [
+    ],
+    "test-depends": [
+    ],
+    "version": "0.0.1"
+}

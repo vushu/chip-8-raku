@@ -1,0 +1,47 @@
+use Test;
+use lib 'lib';
+
+plan 1;
+
+use-ok "Chip8";
+use-ok "CPU";
+
+# my $file = open 'roms/ibm_logo.ch8', :bin, :r;
+# my $file = open 'roms/blinky.ch8', :bin;
+my $file = open 'roms/blitz.ch8', :bin;
+my $contents = $file.slurp;
+$file.close;
+# say "content: ", $contents;
+# for $contents.list -> $c {
+#     say $c;
+# }
+
+# say $contents.list;
+
+# (my $file = 'roms/ibm_logo.ch8'.IO);
+# given $file.open {
+#     say .read: 16; # OUTPUT: «Buf[uint8]:0x<49 20 e2 99 a5 20>␤» 
+#     .close;
+# }
+
+use CPU;
+my $cpu = CPU.new();
+$cpu.load-sprites-into-memory;
+$cpu.load-program-into-memory($contents);
+
+ok $cpu.memory.elems eq 4096, 'Memory size is ok';
+ok $cpu.v.elems eq 16, 'Register size is ok';
+
+say $cpu.emulate-cycle;
+
+
+
+say "wrapping test";
+my uint8 $byte = 255;
+
+my uint8 $increment = 4;
+
+my uint8 $result = $byte + $increment;
+
+say "result is: ", $result;
+
