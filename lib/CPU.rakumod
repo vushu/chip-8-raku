@@ -17,7 +17,7 @@ has $!sound-timer = 0;
 # Program starts at posiston 0x200
 has uint16 $!pc = 0x200;
 
-has uint16 $!sp = 0;
+# has uint16 $!sp = 0;
 # Stores memory addresses
 has uint16 $!i = 0; 
 
@@ -29,13 +29,6 @@ has $.speed = 10;
 
 has Renderer $!renderer .= new(20);
 has Keyboard $!keyboard .= new;
-
-
-method set-pixel($x, $y) {
-    say "x: ", $x;
-    say "y: ",  $y;
-    $!renderer.set-pixel($x, $y);
-}
 
 method load-sprites-into-memory() {
     # Array of hex values for each sprite. Each sprite is 5 bytes.
@@ -71,25 +64,27 @@ method load-program-into-memory($program) {
     }
 }
 
-method emulate-cycle() {
+method emulate {
     $!renderer.init;
     while (!window-should-close) {
-        if !$!paused {
-            my $opcode = $.memory[$!pc] +< 8 +| $.memory[$!pc + 1];
-            self.execute-instruction($opcode);
-        }
-        else {
-            say "Currently paused push any button";
-            my $found = $!keyboard.any-key-down;
-            if $found {
+        for 0..16 -> $_ {
+            if !$!paused {
                 my $opcode = $.memory[$!pc] +< 8 +| $.memory[$!pc + 1];
-                my $x = ($opcode +& 0x0F00) +> 8;
-
-                # say "Unpausing! ", $found.WHAT;
-                $.v[$x] = $found.Int;
-                $!paused = False;
+                self.execute-instruction($opcode);
             }
+            else {
+                say "Currently paused push any button";
+                my $found = $!keyboard.any-key-down;
+                if $found {
+                    my $opcode = $.memory[$!pc] +< 8 +| $.memory[$!pc + 1];
+                    my $x = ($opcode +& 0x0F00) +> 8;
 
+                    # say "Unpausing! ", $found.WHAT;
+                    $.v[$x] = $found.Int;
+                    $!paused = False;
+                }
+
+            }
         }
         if (!$!paused) {
             self.update-timers;
@@ -120,14 +115,14 @@ method execute-instruction($opcode) {
                 }
                 when 0x00EE {
                     say "pop stack";
-                    $!stack.pop;
+                    $!pc= $!stack.pop;
                 }
             }
         }
         when 0x1000 { 
             # say "opcode 1 JP";
             say "0x1000";
-            $!pc = $opcode +& 0xFFF;
+            $!pc = ($opcode +& 0xFFF);
         }
         when 0x2000 { say "opcode 2";
             $!stack.push($!pc);
@@ -208,7 +203,7 @@ method execute-instruction($opcode) {
             $!pc += 2 if $.v[$x] ne $.v[$y];
         }
         when 0xA000 { say "opcode A";
-            $!i = $opcode +& 0xFFF;
+            $!i = ($opcode +& 0xFFF);
         }
         when 0xB000 { say "opcode B";
             $!pc = ($opcode +& 0xFFF) + $.v[0];
@@ -241,12 +236,12 @@ method execute-instruction($opcode) {
             say "0xE000";
             given $opcode +& 0xFF {
                 when 0x9E {
-                    if $.keyboard.is-key-pressed($.v[$x]) {
+                    if $!keyboard.is-key-pressed($.v[$x]) {
                         $!pc += 2;
                     }
                 }
                 when 0xA1 { 
-                    if !$.keyboard.is-key-pressed($.v[$x]) {
+                    if !$!keyboard.is-key-pressed($.v[$x]) {
                         $!pc += 2;
                     }
                 }

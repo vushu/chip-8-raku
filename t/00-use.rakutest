@@ -9,6 +9,7 @@ use-ok "CPU";
 # my $file = open 'roms/ibm_logo.ch8', :bin, :r;
 # my $file = open 'roms/blinky.ch8', :bin;
 my $file = open 'roms/blitz.ch8', :bin;
+# my $file = open 'roms/test_opcode.ch8', :bin;
 my $contents = $file.slurp;
 $file.close;
 # say "content: ", $contents;
@@ -32,7 +33,7 @@ $cpu.load-program-into-memory($contents);
 ok $cpu.memory.elems eq 4096, 'Memory size is ok';
 ok $cpu.v.elems eq 16, 'Register size is ok';
 
-say $cpu.emulate-cycle;
+$cpu.emulate;
 
 
 

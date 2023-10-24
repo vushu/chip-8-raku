@@ -36,25 +36,28 @@ method new($scale) {
     self.bless(:$scale);
 }
 
-method set-pixel(uint8 $x, uint8 $y) {
+method set-pixel($x, $y) {
     # should try something else at some point
+    my $new-x = $x;
+    my $new-y = $y;
     if ($x >  $!cols) {
-        $x -= $!cols;
+        $new-x = $x - $!cols;
     }
     elsif ($x < 0) {
-        $x += $!cols;
+        $new-x = $x + $!cols;
     }
 
     if ($y > $!rows) {
-        $y -= $!rows;
+        $new-y = $y - $!rows;
     }
     elsif ($y < 0) {
-        $y += $!rows;
+        $new-y =  $y + $!rows;
     }
 
-    my $pixel-loc = $x + $y * $!cols;
-    say "pixel ", $pixel-loc;
+    my $pixel-loc = $new-x + $new-y * $!cols;
+    say "pixel loc: ", $pixel-loc;
     @!display[$pixel-loc] +^= 1;
+    say "OK ", $pixel-loc;
     return @!display[$pixel-loc] eq 0;
 }
 
