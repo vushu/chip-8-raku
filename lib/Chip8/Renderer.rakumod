@@ -13,22 +13,19 @@ has $!pixel-width;
 
 submethod BUILD (:$scale) {
     $!scale = $scale;
+    #Chip-8 has 64x32 pixels
     $!cols = 64;
     $!rows = 32;
-    say "Scale is: ", $!scale;
-    say "Cols is: ", $!cols;
+    # Window size
     $!width = $!scale * $!cols;
     $!height = $!scale * $!rows;
 
-    say "Width: ", $!width;
-    say "Height: ", $!height;
+    # Display to be rendered
     @!display = [0 xx $!cols * $!rows];
-    # @!display[0] = 1;
-    # @!display[64] = 1;
+
     $!bg-color = Color.init(0,0,0, 0xFF);
-    # $!pixel-color = Color.init(230, 41, 55, 255);
+
     $!pixel-color = init-darkgreen;
-    $!pixel-width = $!width / $!cols;
 
 }
 
@@ -37,7 +34,6 @@ method new($scale) {
 }
 
 method set-pixel($x, $y) {
-    # should try something else at some point
     my $new-x = $x;
     my $new-y = $y;
     if ($x >  $!cols) {
@@ -55,9 +51,7 @@ method set-pixel($x, $y) {
     }
 
     my $pixel-loc = $new-x + $new-y * $!cols;
-    say "pixel loc: ", $pixel-loc;
     @!display[$pixel-loc] +^= 1;
-    say "OK ", $pixel-loc;
     return @!display[$pixel-loc] eq 0;
 }
 
@@ -77,7 +71,7 @@ method render {
         if $draw {
             my $y-idx= ($index / $!cols).Int;
             my $x-idx= ($index % $!cols).Int;
-            draw-rectangle($!scale.Int * $x-idx, $!scale.Int * $y-idx, $!pixel-width.Int, $!pixel-width.Int, $!pixel-color);
+            draw-rectangle($!scale.Int * $x-idx, $!scale.Int * $y-idx, $!scale.Int, $!scale.Int, $!pixel-color);
         }
     }
 

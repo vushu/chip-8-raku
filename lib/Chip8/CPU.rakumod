@@ -1,6 +1,6 @@
 unit class CPU;
-use Renderer;
-use Keyboard;
+use Chip8::Renderer;
+use Chip8::Keyboard;
 use Raylib::Bindings;
 
 # Memory
@@ -25,10 +25,17 @@ has buf16 $!stack .= new(0 xx 16);
 
 has $!paused = False;
 
-has $.speed = 10;
+# Instructions speed
+has $.speed = 9;
 
+# Creating renderer with a scale of 20
 has Renderer $!renderer .= new(20);
 has Keyboard $!keyboard .= new;
+
+method init($contents) {
+    self.load-sprites-into-memory;
+    self.load-program-into-memory($contents);
+}
 
 method load-sprites-into-memory() {
     # Array of hex values for each sprite. Each sprite is 5 bytes.
@@ -52,8 +59,8 @@ method load-sprites-into-memory() {
         0xF0, 0x80, 0xF0, 0x80, 0x80  # F
     );
 
+    # filling up predefined sprites into memory
     for @sprites.kv -> $index, $item {
-        # say $item.WHAT;
         $.memory[$index] = $item;
     }
 }
@@ -67,13 +74,13 @@ method load-program-into-memory($program) {
 method emulate {
     $!renderer.init;
     while (!window-should-close) {
-        for 0..16 -> $_ {
+        for 0..$!speed -> $_ {
             if !$!paused {
                 my $opcode = $.memory[$!pc] +< 8 +| $.memory[$!pc + 1];
                 self.execute-instruction($opcode);
             }
             else {
-                say "Currently paused push any button";
+                say "Game is paused! push any button...";
                 my $found = $!keyboard.any-key-down;
                 if $found {
                     my $opcode = $.memory[$!pc] +< 8 +| $.memory[$!pc + 1];
@@ -104,58 +111,52 @@ method execute-instruction($opcode) {
 
     my $x = ($opcode +& 0x0F00) +> 8;
     my $y = ($opcode +& 0x00F0) +> 4;
-
-    given $opcode +& 0xF000 {
-        say "0xF000";
+    my $instruction = $opcode +& 0xF000;
+    say $instruction.base(16);
+    given $instruction {
         when 0x0000 {
             given $opcode {
                 when 0x00E0 {
-                    say "CLEARING";
+                    # CLS - clearing display
                     $!renderer.clear;
                 }
                 when 0x00EE {
-                    say "pop stack";
+                    # RET - pop the stack
                     $!pc= $!stack.pop;
                 }
             }
         }
         when 0x1000 { 
-            # say "opcode 1 JP";
-            say "0x1000";
+            # 1nnn - JP addr - set program counter to nnn
             $!pc = ($opcode +& 0xFFF);
         }
-        when 0x2000 { say "opcode 2";
+        when 0x2000 { 
+            # 2nnn - CALL addr
             $!stack.push($!pc);
             $!pc = ($opcode +& 0xFFF);
         }
         when 0x3000 { 
-            say "opcode 3 "; 
             if $.v[$x] eq ($opcode +& 0xFF) {
                 $!pc += 2;
             }
         }
         when 0x4000 { 
-            say "opcode 4"; 
             if $.v[$x] ne ($opcode +& 0xFF) {
                 $!pc += 2;
             }
         }
         when 0x5000 { 
-            say "opcode 5";
             if $.v[$x] eq $.v[$y] {
                 $!pc += 2;
             }
         }
         when 0x6000 { 
-            say "opcode 6";
             $.v[$x] = ($opcode +& 0xFF);
         }
         when 0x7000 { 
-            say "opcode 7";
             $.v[$x] += ($opcode +& 0xFF);
         }
         when 0x8000 { 
-            say "opcode 8";
             given $opcode +& 0xF {
                 when 0x0 {
                     $.v[$x] = $.v[$y];
@@ -199,20 +200,20 @@ method execute-instruction($opcode) {
                 }
             }
         }
-        when 0x9000 { say "opcode 9";
+        when 0x9000 {
             $!pc += 2 if $.v[$x] ne $.v[$y];
         }
-        when 0xA000 { say "opcode A";
+        when 0xA000 {
             $!i = ($opcode +& 0xFFF);
         }
-        when 0xB000 { say "opcode B";
+        when 0xB000 {
             $!pc = ($opcode +& 0xFFF) + $.v[0];
         }
-        when 0xC000 { say "opcode C";
+        when 0xC000 {
             my $rand = (0..255).rand;
             $.v[$x] = $rand +& ($opcode +& 0xFF);
         }
-        when 0xD000 { say "opcode D DRAW STUFF";
+        when 0xD000 {
             my $width = 8;
             my $height = ($opcode +& 0xF);
 
@@ -233,7 +234,6 @@ method execute-instruction($opcode) {
             }
         }
         when 0xE000 { 
-            say "0xE000";
             given $opcode +& 0xFF {
                 when 0x9E {
                     if $!keyboard.is-key-pressed($.v[$x]) {
@@ -248,8 +248,9 @@ method execute-instruction($opcode) {
             }
         }
         when 0xF000 { 
-            say "OPCode: F";
-            given $opcode +& 0xFF {
+            my $sub-instruction = $opcode +& 0xFF;
+            say "    |--> ", $sub-instruction.base(16);
+            given $sub-instruction {
                 when 0x07 {
                     $.v[$x] = $!delay-timer;
                 }
@@ -269,7 +270,7 @@ method execute-instruction($opcode) {
                     $!i = $.v[$x] * 5;
                 }
                 when 0x33 {
-                    say "0x33";
+                    # Fx33 - LD B, Vx
                     $.memory[$!i] = ($.v[$x] / 100).Int;
 
                     $.memory[$!i + 1] = (($.v[$x] % 100) / 10).Int;

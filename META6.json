@@ -1,18 +1,27 @@
 {
     "auth": "zef:vushu",
+    "authors": [
+        "Dan Vu (vushu)"
+    ],
     "build-depends": [
     ],
     "depends": [
         "Raylib::Bindings:ver<0.0.5>:auth<zef:vushu>"
     ],
-    "description": "A brand new and very nice module",
-    "name": "chip-8",
+    "description": "Chip-8 emulator in raku",
+    "name": "Chip8",
     "provides": {
-        "Chip8": "lib/Chip8.rakumod"
+        "Chip8": "lib/Chip8.rakumod",
+        "Chip8::CPU": "lib/Chip8/CPU.rakumod",
+        "Chip8::Keyboard": "lib/Chip8/Keyboard.rakumod",
+        "Chip8::Renderer": "lib/Chip8/Renderer.rakumod"
     },
     "resources": [
     ],
     "test-depends": [
     ],
-    "version": "0.0.1"
+    "version": "0.0.1",
+    "source-url": "https://github.com/vushu/chip-8-raku.git",
+    "license": "Artistic-2.0"
+
 }

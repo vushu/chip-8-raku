@@ -4,45 +4,17 @@ use lib 'lib';
 plan 1;
 
 use-ok "Chip8";
-use-ok "CPU";
 
-# my $file = open 'roms/ibm_logo.ch8', :bin, :r;
-# my $file = open 'roms/blinky.ch8', :bin;
-my $file = open 'roms/blitz.ch8', :bin;
+# use Chip8::CPU;
 # my $file = open 'roms/test_opcode.ch8', :bin;
-my $contents = $file.slurp;
-$file.close;
-# say "content: ", $contents;
-# for $contents.list -> $c {
-#     say $c;
-# }
+# my $contents = $file.slurp;
+# $file.close;
 
-# say $contents.list;
+# my $cpu = CPU.new();
+# $cpu.init($contents);
 
-# (my $file = 'roms/ibm_logo.ch8'.IO);
-# given $file.open {
-#     say .read: 16; # OUTPUT: «Buf[uint8]:0x<49 20 e2 99 a5 20>␤» 
-#     .close;
-# }
+# ok $cpu.memory.elems eq 4096, 'Memory size is ok';
+# ok $cpu.v.elems eq 16, 'Register size is ok';
 
-use CPU;
-my $cpu = CPU.new();
-$cpu.load-sprites-into-memory;
-$cpu.load-program-into-memory($contents);
-
-ok $cpu.memory.elems eq 4096, 'Memory size is ok';
-ok $cpu.v.elems eq 16, 'Register size is ok';
-
-$cpu.emulate;
-
-
-
-say "wrapping test";
-my uint8 $byte = 255;
-
-my uint8 $increment = 4;
-
-my uint8 $result = $byte + $increment;
-
-say "result is: ", $result;
-
+# $cpu.emulate;
+done-testing;

@@ -1,10 +1,9 @@
 use lib 'lib';
 use Chip8;
 
-sub MAIN() {
+sub MAIN($rom) {
     my $chip8 = Chip8.new;
-    say "chip 8 running";
-    say $chip8.memory.elems;
+    $chip8.run($rom);
 
 }
 
